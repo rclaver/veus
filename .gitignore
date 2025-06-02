@@ -1,15 +1,20 @@
-*.iml
-.gradle/
 build/
 local.properties
+*.jar
 *.log
+*.iml
 
+assets/
+.gradle/
 .idea/
+.kotlin/
+.git/
 .DS_Store
 google-services.json
 
 captures/
-*.apk
 .externalNativeBuild
 .cxx
 output.json
+gradlew
+gradlew.bat
