@@ -50,30 +50,27 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
          )
       )
       fun setIdioma(i: String) {idioma = i}
+      fun getIdioma() = idioma
       fun get(idioma: String, elem:Int): Voice = iVeus[idioma]!![elem]
       fun getVeus(idioma: String): Array<Voice>? { return iVeus[idioma] }
    }
 
    private var tts: TextToSpeech? = null
-   private val idioma: Locale = Locale("ca", "ES")
+   private var idioma: Locale = Locale("ca", "ES")
    private val engine = "com.google.android.tts" // Motor de Google TTS
    private lateinit var notes: TextView
-   private lateinit var select_veu: Spinner
+   private lateinit var selectVeu: Spinner
    private var opcionsVeu: Array<String> = arrayOf("veu_0")
    private lateinit var play: ImageButton
-   private lateinit var velocitat: Spinner
-   private lateinit var registre: Spinner
-   private val opcVelocitat = Array(
-      size=5,
-      init = { n ->
-         val i = 1.0f
-         i+0.1f })
-   private val opcRegistre = Array(
-      size=20,
-      init = { n ->
-         val i = 0.3f
-         i+0.1f })
-   private lateinit var select_idioma: Spinner
+   private lateinit var selectVelocitat: Spinner
+   private lateinit var selectRegistre: Spinner
+   private val opcVelocitat = Array(size=5, init = { n ->
+         var i = 1.0f
+         i = i+0.1f })
+   private val opcRegistre = Array(size=20, init = { n ->
+         var i = 0.3f
+         i = i+0.1f })
+   private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
 
 
@@ -84,70 +81,74 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       objTTS.set(TextToSpeech(this, this, engine))
       objTTS.inici()
       tts = objTTS.get()
-      select_veu = findViewById(R.id.select_veu)
+      selectVeu = findViewById(R.id.selectVeu)
       play = findViewById(R.id.play)
-      velocitat = findViewById(R.id.velocitat)
-      registre = findViewById(R.id.registre)
-      select_idioma = findViewById(R.id.select_idioma)
+      selectVelocitat = findViewById(R.id.selectVelocitat)
+      selectRegistre = findViewById(R.id.selectRegistre)
+      selectIdioma = findViewById(R.id.selectIdioma)
       notes = findViewById(R.id.notes)
 
       creaFormulari(applicationContext)
 
       play.setOnClickListener {
-         val veu = select_veu.selectedItem.toString()
-         val registre = registre.selectedItem.toString().toFloat()
-         val velocitat = velocitat.selectedItem.toString().toFloat()
+         val veu = selectVeu.selectedItem.toString()
+         val registre = selectRegistre.selectedItem.toString().toFloat() ?: 1.0f
+         val velocitat = selectVelocitat.selectedItem.toString().toFloat() ?: 1.0f
          //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
          //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
-         val idioma = select_idioma.selectedItem.toString().substring(0, 2).lowercase()
-         canta(veu, registre, velocitat, idioma)
+         val idiom = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
+         canta(veu, registre, velocitat, idiom)
       }
 
-      select_veu.onItemSelectedListener.apply {
-         opcionsVeu = Array(objVeus.getVeus(select_veu.selectedItem.toString())!!.size) {i -> "veu_${i}"}
+      selectVeu.onItemSelectedListener.apply {
+         opcionsVeu = Array(objVeus.getVeus(objVeus.getIdioma())!!.size) { i -> "veu_${i}" }
          creaFormulari(applicationContext)
       }
 
-      select_idioma.onItemSelectedListener.apply {
-         objVeus.setIdioma(select_idioma.selectedItem.toString().substring(0, 2).lowercase())
-         creaFormulari(applicationContext)
+      selectIdioma.onItemSelectedListener.apply {
+         if (selectIdioma.selectedItem.toString().isNotEmpty()) {
+            val idiom = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
+            objVeus.setIdioma(idiom)
+            canviaIdioma(idiom, applicationContext)
+            creaFormulari(applicationContext)
+         }
       }
 
    }
 
    // Crea els elements del formulari
    private fun creaFormulari(context: Context) {
-      select_idioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
+      selectIdioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
 
-      select_veu = Spinner(context).apply {
+      selectVeu = Spinner(context).apply {
          adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
          setPadding(10, 2, 0, 2)
       }
-      velocitat = Spinner(context).apply {
+      selectVelocitat = Spinner(context).apply {
          adapter = ArrayAdapter(context, R.layout.spinner, opcVelocitat)
          setPadding(10, 2, 0, 2)
       }
-      registre = Spinner(context).apply {
+      selectRegistre = Spinner(context).apply {
          adapter = ArrayAdapter(context, R.layout.spinner, opcRegistre)
          setPadding(10, 2, 0, 2)
       }
    }
 
-   private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, idioma: String) {
+   private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, idiom: String) {
       val text = mapOf(
          "ca" to "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia. Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa.",
          "en" to "The lady gave them to me a year ago, you know. She was really happy because she'd won bingo and said I'd brought her luck that day. It turns out I'd left the vacuum cleaner parked wrong, and she tripped before leaving the house.",
          "es" to "La señora me las regaló hace un año, ¿sabe? Estaba muy contenta porque había hecho bingo y decía que yo le había dado suerte ese día. Resulta que dejé la aspiradora mal aparcada, y ella se tropezó antes de salir de casa."
       )
-      notes.text = "veuSeleccionada: ${veuSeleccionada}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $idioma"
+      notes.text = "veuSeleccionada: ${veuSeleccionada}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $idiom"
 
       val regexVeu = """.*?_([0-9]+)""".toRegex()
       val iVeu = regexVeu.find(veuSeleccionada)!!.groupValues[1].toInt()
-      val veu = objVeus.getVeus(idioma)!![iVeu]
+      val veu = objVeus.getVeus(idiom)!![iVeu]
 
       tts?.setPitch(registre)
       tts?.setSpeechRate(velocitat)
-      tts?.speak(text[idioma], TextToSpeech.QUEUE_FLUSH, null, null)
+      tts?.speak(text[idiom], TextToSpeech.QUEUE_FLUSH, null, null)
       tts?.voice = veu
       while (tts?.isSpeaking==true) { true }
    }
@@ -173,12 +174,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       }
    }
 
-   fun canviaIdioma(idioma: String, context: Context) {
+   fun canviaIdioma(idiom: String, context: Context) {
       val displayMetrics = context.resources.displayMetrics
       val configuracio = context.resources.configuration
-      configuracio.setLocale(Locale(idioma))
+      configuracio.setLocale(Locale(idiom))
       context.resources.updateConfiguration(configuracio, displayMetrics)
-      configuracio.locale = Locale(idioma)
+      configuracio.locale = Locale(idiom)
       context.resources.updateConfiguration(configuracio, displayMetrics)
    }
 

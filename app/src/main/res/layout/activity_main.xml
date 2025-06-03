@@ -20,7 +20,7 @@
          android:layout_height="wrap_content"
          android:text="veu" />
       <Spinner
-         android:id="@+id/select_veu"
+         android:id="@+id/selectVeu"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_marginStart="1dp" />
@@ -38,8 +38,8 @@
          android:layout_height="wrap_content"
          android:text="velocitat" />
       <Spinner
-         android:id="@+id/velocitat"
-         android:layout_width="40dp"
+         android:id="@+id/selectVelocitat"
+         android:layout_width="60dp"
          android:layout_height="wrap_content"
          android:layout_marginStart="4dp" />
       <TextView
@@ -47,12 +47,12 @@
          android:layout_height="wrap_content"
          android:text="registre" />
       <Spinner
-         android:id="@+id/registre"
-         android:layout_width="40dp"
+         android:id="@+id/selectRegistre"
+         android:layout_width="60dp"
          android:layout_height="wrap_content"
          android:layout_marginStart="4dp" />
       <!--com.google.android.material.textfield.TextInputEditText
-         android:id="@+id/velocitat"
+         android:id="@+id/selectVelocitat"
          android:layout_width="60dp"
          android:layout_height="wrap_content"
          android:layout_marginStart="10dp"
@@ -70,7 +70,7 @@
          android:layout_height="wrap_content"
          android:text="idioma" />
       <Spinner
-         android:id="@+id/select_idioma"
+         android:id="@+id/selectIdioma"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_marginStart="1dp" />
