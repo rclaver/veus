@@ -1,13 +1,15 @@
 package cat.tron.veus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
-import android.widget.Button
+import android.widget.ArrayAdapter
+import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputEditText
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
@@ -20,16 +22,59 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       operator fun invoke() = tts
    }
 
+   object objVeus {
+      private var idioma: String = "ca"
+      private val iVeus: Map<String, Array<Voice>> = mapOf(
+         "ca" to arrayOf(
+            Voice("ca-es-x-caf-local", Locale("ca_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null)
+         ),
+         "es" to arrayOf(
+            Voice("es-us-x-sfb-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-US-language", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-us-x-esc-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-us-x-esd-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-us-x-esf-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-us-x-esc-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-us-x-esf-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-us-x-sfb-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eef-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eec-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eed-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-ES-language", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eee-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eea-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-es-x-eea-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-es-x-eec-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-es-x-eed-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
+            Voice("es-us-x-esd-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null)
+         )
+      )
+      fun setIdioma(i: String) {idioma = i}
+      fun get(idioma: String, elem:Int): Voice = iVeus[idioma]!![elem]
+      fun getVeus(idioma: String): Array<Voice>? { return iVeus[idioma] }
+   }
+
    private var tts: TextToSpeech? = null
    private val idioma: Locale = Locale("ca", "ES")
    private val engine = "com.google.android.tts" // Motor de Google TTS
    private lateinit var notes: TextView
-   private lateinit var heroi: Button
-   private lateinit var brivall: Button
-   private lateinit var velocitatHeroi: TextInputEditText
-   private lateinit var velocitatBrivall: TextInputEditText
-   private lateinit var registreHeroi: TextInputEditText
-   private lateinit var registreBrivall: TextInputEditText
+   private lateinit var select_veu: Spinner
+   private var opcionsVeu: Array<String> = arrayOf("veu_0")
+   private lateinit var play: ImageButton
+   private lateinit var velocitat: Spinner
+   private lateinit var registre: Spinner
+   private val opcVelocitat = Array(
+      size=5,
+      init = { n ->
+         val i = 1.0f
+         i+0.1f })
+   private val opcRegistre = Array(
+      size=20,
+      init = { n ->
+         val i = 0.3f
+         i+0.1f })
+   private lateinit var select_idioma: Spinner
+   private val opcionsIdioma = arrayOf("Català", "English", "Español")
 
 
    override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,53 +82,73 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       setContentView(R.layout.activity_main)
 
       objTTS.set(TextToSpeech(this, this, engine))
-
       objTTS.inici()
       tts = objTTS.get()
+      select_veu = findViewById(R.id.select_veu)
+      play = findViewById(R.id.play)
+      velocitat = findViewById(R.id.velocitat)
+      registre = findViewById(R.id.registre)
+      select_idioma = findViewById(R.id.select_idioma)
       notes = findViewById(R.id.notes)
-      heroi = findViewById(R.id.heroi)
-      brivall = findViewById(R.id.brivall)
-      velocitatHeroi = findViewById(R.id.velocitat_heroi)
-      velocitatBrivall = findViewById(R.id.velocitat_brivall)
-      registreHeroi = findViewById(R.id.registre_heroi)
-      registreBrivall = findViewById(R.id.registre_brivall)
 
-      heroi.setOnClickListener {
-         val velocitat: Float = if (velocitatHeroi.text.toString() != "") velocitatHeroi.text.toString().toFloat() else 1.0f
-         val registre: Float = if (registreHeroi.text.toString() != "") registreHeroi.text.toString().toFloat() else 1.0f
-         speakCharacter(heroi.text.toString(), registre, velocitat)
+      creaFormulari(applicationContext)
+
+      play.setOnClickListener {
+         val veu = select_veu.selectedItem.toString()
+         val registre = registre.selectedItem.toString().toFloat()
+         val velocitat = velocitat.selectedItem.toString().toFloat()
+         //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
+         //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
+         val idioma = select_idioma.selectedItem.toString().substring(0, 2).lowercase()
+         canta(veu, registre, velocitat, idioma)
       }
 
-      brivall.setOnClickListener {
-         val velocitat: Float = if (velocitatBrivall.text.toString() != "") velocitatBrivall.text.toString().toFloat() else 1.0f
-         val registre: Float = if (registreBrivall.text.toString() != "") registreBrivall.text.toString().toFloat() else 1.0f
-         speakCharacter(brivall.text.toString(), registre, velocitat)
+      select_veu.onItemSelectedListener.apply {
+         opcionsVeu = Array(objVeus.getVeus(select_veu.selectedItem.toString())!!.size) {i -> "veu_${i}"}
+         creaFormulari(applicationContext)
+      }
+
+      select_idioma.onItemSelectedListener.apply {
+         objVeus.setIdioma(select_idioma.selectedItem.toString().substring(0, 2).lowercase())
+         creaFormulari(applicationContext)
+      }
+
+   }
+
+   // Crea els elements del formulari
+   private fun creaFormulari(context: Context) {
+      select_idioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
+
+      select_veu = Spinner(context).apply {
+         adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
+         setPadding(10, 2, 0, 2)
+      }
+      velocitat = Spinner(context).apply {
+         adapter = ArrayAdapter(context, R.layout.spinner, opcVelocitat)
+         setPadding(10, 2, 0, 2)
+      }
+      registre = Spinner(context).apply {
+         adapter = ArrayAdapter(context, R.layout.spinner, opcRegistre)
+         setPadding(10, 2, 0, 2)
       }
    }
 
-   private fun speakCharacter(actor: String, pitch: Float, rate: Float) {
-      val text = "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia. Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa."
-      notes.text = "actor: $actor \nregistre: ${pitch} \nvelocitat: ${rate}"
-      /*
-      val voiceName = when(actor) {
-         "heroi" -> "ca-es-x-caf-local"
-         "brivall" -> "ca-ES-language"
-         else -> "ca-es-x-caf-local"
-      }
-      val voice = tts?.voices?.find { it.name == voiceName }
-      voice?.let { tts?.voice = it }
-      */
-      val veu_brivall = Voice("ca-es-x-caf-local", Locale("ca_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_VERY_LOW, false, null)
-      val veu_heroi = Voice("ca-es-x-caf-local", Locale("ca_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_VERY_HIGH, false, null)
-      val veu = when(actor) {
-         "heroi" -> veu_heroi
-         "brivall" -> veu_brivall
-         else -> veu_heroi
-      }
+   private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, idioma: String) {
+      val text = mapOf(
+         "ca" to "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia. Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa.",
+         "en" to "The lady gave them to me a year ago, you know. She was really happy because she'd won bingo and said I'd brought her luck that day. It turns out I'd left the vacuum cleaner parked wrong, and she tripped before leaving the house.",
+         "es" to "La señora me las regaló hace un año, ¿sabe? Estaba muy contenta porque había hecho bingo y decía que yo le había dado suerte ese día. Resulta que dejé la aspiradora mal aparcada, y ella se tropezó antes de salir de casa."
+      )
+      notes.text = "veuSeleccionada: ${veuSeleccionada}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $idioma"
+
+      val regexVeu = """.*?_([0-9]+)""".toRegex()
+      val iVeu = regexVeu.find(veuSeleccionada)!!.groupValues[1].toInt()
+      val veu = objVeus.getVeus(idioma)!![iVeu]
+
+      tts?.setPitch(registre)
+      tts?.setSpeechRate(velocitat)
+      tts?.speak(text[idioma], TextToSpeech.QUEUE_FLUSH, null, null)
       tts?.voice = veu
-      tts?.setPitch(pitch)
-      tts?.setSpeechRate(rate)
-      tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, actor)
       while (tts?.isSpeaking==true) { true }
    }
 
@@ -106,6 +171,15 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       } else {
          print("error_inici_TTS")
       }
+   }
+
+   fun canviaIdioma(idioma: String, context: Context) {
+      val displayMetrics = context.resources.displayMetrics
+      val configuracio = context.resources.configuration
+      configuracio.setLocale(Locale(idioma))
+      context.resources.updateConfiguration(configuracio, displayMetrics)
+      configuracio.locale = Locale(idioma)
+      context.resources.updateConfiguration(configuracio, displayMetrics)
    }
 
    override fun onDestroy() {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout
+<LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
    xmlns:app="http://schemas.android.com/apk/res-auto"
    xmlns:tools="http://schemas.android.com/tools"
@@ -9,125 +9,78 @@
    android:id="@+id/main"
    tools:context=".MainActivity">
 
-   <TableRow
+   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
       android:layout_marginTop="80dp">
-
-      <Button
-         android:id="@+id/heroi"
+      <TextView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:layout_marginStart="60dp"
-         android:text="heroi"
-         app:layout_constraintBottom_toBottomOf="parent"
-         app:layout_constraintTop_toTopOf="parent" />
-
-      <Button
-         android:id="@+id/brivall"
+         android:text="veu" />
+      <Spinner
+         android:id="@+id/select_veu"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="brivall"
-         android:layout_marginStart="60dp"
-         app:layout_constraintEnd_toEndOf="parent"
-         app:layout_constraintStart_toStartOf="@id/heroi"
-         app:layout_constraintTop_toTopOf="@id/heroi" />
-   </TableRow>
+         android:layout_marginStart="1dp" />
 
-   <TableRow
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="20dp">
-      <LinearLayout
-         android:orientation="horizontal"
-         android:layout_marginStart="10dp" >
+      <ImageButton
+         android:id="@+id/play"
+         android:layout_width="20dp"
+         android:layout_height="20dp"
+         android:layout_marginLeft="10dp"
+         android:layout_marginRight="20dp"
+         app:srcCompat="@android:drawable/ic_media_play" />
+
       <TextView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="velocitat" />
-      <!--Spinner
-         android:id="@+id/velocitat_heroi"
-         android:layout_width="wrap_content"
+      <Spinner
+         android:id="@+id/velocitat"
+         android:layout_width="40dp"
          android:layout_height="wrap_content"
-         android:layout_marginStart="10dp" /-->
-         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/velocitat_heroi"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:inputType="numberDecimal" />
-      </LinearLayout>
-
-      <LinearLayout
-         android:orientation="horizontal"
-         android:layout_marginStart="30dp" >
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="velocitat" />
-      <!--Spinner
-         android:id="@+id/velocitat_brivall"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_marginStart="10dp" /-->
-         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/velocitat_brivall"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:inputType="numberDecimal" />
-      </LinearLayout>
-   </TableRow>
-
-   <TableRow
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="20dp">
-      <LinearLayout
-         android:orientation="horizontal"
-         android:layout_marginStart="10dp" >
+         android:layout_marginStart="4dp" />
       <TextView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="registre" />
-      <!--Spinner
-         android:id="@+id/registre_heroi"
-         android:layout_width="wrap_content"
+      <Spinner
+         android:id="@+id/registre"
+         android:layout_width="40dp"
          android:layout_height="wrap_content"
-         android:layout_marginStart="14dp" /-->
-         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/registre_heroi"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:inputType="numberDecimal" />
-      </LinearLayout>
-      <LinearLayout
-         android:orientation="horizontal"
-         android:layout_marginStart="30dp" >
-         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="registre" />
-         <!--Spinner
-            android:id="@+id/registre_brivall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp" /-->
-         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/registre_brivall"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:inputType="numberDecimal" />
-      </LinearLayout>
+         android:layout_marginStart="4dp" />
+      <!--com.google.android.material.textfield.TextInputEditText
+         android:id="@+id/velocitat"
+         android:layout_width="60dp"
+         android:layout_height="wrap_content"
+         android:layout_marginStart="10dp"
+         android:inputType="numberDecimal" /-->
+   </LinearLayout>
 
-   </TableRow>
-
-   <TextView
+   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginTop="20dp"
-      android:id="@+id/notes" />
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginTop="40dp">
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="idioma" />
+      <Spinner
+         android:id="@+id/select_idioma"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_marginStart="1dp" />
 
-</TableLayout>
+   </LinearLayout>
+
+   <TextView
+      android:id="@+id/notes"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp" />
+
+</LinearLayout>
