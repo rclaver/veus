@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private lateinit var play: ImageButton
    private lateinit var selectVelocitat: Spinner
    private lateinit var selectRegistre: Spinner
-   private val opcVelocitat = Array<Float>(5) { n -> 0.9f + (n+1).toFloat()/10 }
-   private val opcRegistre = Array<Float>(20) { n -> round((n+1).toFloat()/10 + 0.2f) }
+   private val opcVelocitat = Array<String>(5) { n -> (0.9f + (n+1).toFloat()/10).toString() }
+   private val opcRegistre = Array<String>(20) { n -> ((n+1).toFloat()/10 + 0.2f).toString().substring(0,3) }
    private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
 
@@ -91,8 +91,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
       play.setOnClickListener {
          val veu = selectVeu.selectedItem.toString()
-         val registre = if (selectRegistre.get(0).isGone) selectRegistre.selectedItem.toString().toFloat() else 1.0f
-         val velocitat = if (selectVelocitat.get(0).isGone) selectVelocitat.selectedItem.toString().toFloat() else 1.0f
+         val registre = if (selectRegistre.selectedItem.toString().isNotEmpty()) selectRegistre.selectedItem.toString().toFloat() else 1.0f
+         val velocitat = if (selectVelocitat.selectedItem.toString().isNotEmpty()) selectVelocitat.selectedItem.toString().toFloat() else 1.0f
          //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
          //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
          val idiom = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()

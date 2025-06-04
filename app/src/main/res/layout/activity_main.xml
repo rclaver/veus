@@ -9,61 +9,63 @@
    android:id="@+id/main"
    tools:context=".MainActivity">
 
+   <TableLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="40dp"
+      android:layout_marginStart="10dp"
+      android:stretchColumns="1">
+      <TableRow
+         android:layout_width="match_parent"
+         android:layout_height="match_parent" >
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="veu"/>
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="inici"/>
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="velocitat" />
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="registre"/>
+      </TableRow>
+
+      <TableRow
+         android:layout_width="match_parent"
+         android:layout_height="match_parent" >
+         <Spinner
+            android:id="@+id/selectVeu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+         <ImageButton
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            app:srcCompat="@android:drawable/ic_media_play" />
+         <Spinner
+            android:id="@+id/selectVelocitat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+         <Spinner
+            android:id="@+id/selectRegistre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+      </TableRow>
+
+   </TableLayout>
+
    <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="horizontal"
-      android:layout_marginStart="5dp"
-      android:layout_marginTop="80dp">
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="veu" />
-      <Spinner
-         android:id="@+id/selectVeu"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_marginStart="1dp" />
-
-      <ImageButton
-         android:id="@+id/play"
-         android:layout_width="20dp"
-         android:layout_height="20dp"
-         android:layout_marginLeft="10dp"
-         android:layout_marginRight="20dp"
-         app:srcCompat="@android:drawable/ic_media_play" />
-
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="velocitat" />
-      <Spinner
-         android:id="@+id/selectVelocitat"
-         android:layout_width="60dp"
-         android:layout_height="wrap_content"
-         android:layout_marginStart="4dp" />
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="registre" />
-      <Spinner
-         android:id="@+id/selectRegistre"
-         android:layout_width="60dp"
-         android:layout_height="wrap_content"
-         android:layout_marginStart="4dp" />
-      <!--com.google.android.material.textfield.TextInputEditText
-         android:id="@+id/selectVelocitat"
-         android:layout_width="60dp"
-         android:layout_height="wrap_content"
-         android:layout_marginStart="10dp"
-         android:inputType="numberDecimal" /-->
-   </LinearLayout>
-
-   <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:layout_marginStart="5dp"
+      android:layout_marginStart="10dp"
       android:layout_marginTop="40dp">
       <TextView
          android:layout_width="wrap_content"
@@ -73,8 +75,7 @@
          android:id="@+id/selectIdioma"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:layout_marginStart="1dp" />
-
+         android:layout_marginStart="5dp" />
    </LinearLayout>
 
    <TextView
