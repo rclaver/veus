@@ -10,7 +10,10 @@ import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
+import androidx.core.view.isGone
 import java.util.Locale
+import kotlin.math.round
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
@@ -60,16 +63,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private val engine = "com.google.android.tts" // Motor de Google TTS
    private lateinit var notes: TextView
    private lateinit var selectVeu: Spinner
-   private var opcionsVeu: Array<String> = arrayOf("veu_0")
+   private var opcionsVeu = arrayOf("veu_0")
    private lateinit var play: ImageButton
    private lateinit var selectVelocitat: Spinner
    private lateinit var selectRegistre: Spinner
-   private val opcVelocitat = Array(size=5, init = { n ->
-         var i = 1.0f
-         i = i+0.1f })
-   private val opcRegistre = Array(size=20, init = { n ->
-         var i = 0.3f
-         i = i+0.1f })
+   private val opcVelocitat = Array<Float>(5) { n -> 0.9f + (n+1).toFloat()/10 }
+   private val opcRegistre = Array<Float>(20) { n -> round((n+1).toFloat()/10 + 0.2f) }
    private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
 
@@ -88,12 +87,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       selectIdioma = findViewById(R.id.selectIdioma)
       notes = findViewById(R.id.notes)
 
-      creaFormulari(applicationContext)
+      generaFormulari(applicationContext)
 
       play.setOnClickListener {
          val veu = selectVeu.selectedItem.toString()
-         val registre = selectRegistre.selectedItem.toString().toFloat() ?: 1.0f
-         val velocitat = selectVelocitat.selectedItem.toString().toFloat() ?: 1.0f
+         val registre = if (selectRegistre.get(0).isGone) selectRegistre.selectedItem.toString().toFloat() else 1.0f
+         val velocitat = if (selectVelocitat.get(0).isGone) selectVelocitat.selectedItem.toString().toFloat() else 1.0f
          //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
          //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
          val idiom = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
@@ -102,7 +101,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
       selectVeu.onItemSelectedListener.apply {
          opcionsVeu = Array(objVeus.getVeus(objVeus.getIdioma())!!.size) { i -> "veu_${i}" }
-         creaFormulari(applicationContext)
+         generaFormulari(applicationContext)
       }
 
       selectIdioma.onItemSelectedListener.apply {
@@ -110,28 +109,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             val idiom = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
             objVeus.setIdioma(idiom)
             canviaIdioma(idiom, applicationContext)
-            creaFormulari(applicationContext)
+            generaFormulari(applicationContext)
          }
       }
 
    }
 
-   // Crea els elements del formulari
-   private fun creaFormulari(context: Context) {
+   // Inicia els elements del formulari
+   private fun generaFormulari(context: Context) {
       selectIdioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
-
-      selectVeu = Spinner(context).apply {
-         adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
-         setPadding(10, 2, 0, 2)
-      }
-      selectVelocitat = Spinner(context).apply {
-         adapter = ArrayAdapter(context, R.layout.spinner, opcVelocitat)
-         setPadding(10, 2, 0, 2)
-      }
-      selectRegistre = Spinner(context).apply {
-         adapter = ArrayAdapter(context, R.layout.spinner, opcRegistre)
-         setPadding(10, 2, 0, 2)
-      }
+      selectVeu.adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
+      selectVelocitat.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcVelocitat)
+      selectRegistre.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcRegistre)
    }
 
    private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, idiom: String) {
