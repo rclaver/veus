@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private lateinit var selectRegistre: Spinner
    private val opcVelocitat = Array<String>(5) { n -> (0.9f + (n+1).toFloat()/10).toString() }
    //private val opcRegistre = Array<String>(20) { n -> ((n+1).toFloat()/10 + 0.2f).toString().substring(0,3) }
-   private val opcRegistre = (3..20).map { (it * 0.1).toString() }.toTypedArray()
+   private val opcRegistre = (3..20).map { (it * 0.1).toString().substring(0,3) }.toTypedArray()
    private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
    private lateinit var activaIdioma: Button
@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       selectVelocitat = findViewById(R.id.selectVelocitat)
       selectRegistre = findViewById(R.id.selectRegistre)
       selectIdioma = findViewById(R.id.selectIdioma)
+      activaIdioma = findViewById(R.id.activaIdioma)
       notes = findViewById(R.id.notes)
       notes_select = findViewById(R.id.notes_select)
 
@@ -103,38 +104,23 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
          //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
          val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
          opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-         generaFormulari(applicationContext)
+         ompleSelectorDeVeus(applicationContext)
          canta(veu, registre, velocitat, llengua)
       }
 
-      /*activaIdioma.setOnClickListener {
+      activaIdioma.setOnClickListener {
          val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
          notes_select.text = "selectIdioma: ${selectIdioma.selectedItem}\nllengua: $llengua"
          objVeus.setIdioma(llengua)
          tts?.language = Locale(llengua)
          canviaIdioma(llengua, applicationContext)
          opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-         generaFormulari(applicationContext)
-      }*/
-
-      selectVeu.onItemSelectedListener.apply {
-         notes_select.text = "selectVeu = ${selectVeu.selectedItem}"
+         ompleSelectorDeVeus(applicationContext)
       }
-      selectVelocitat.onItemSelectedListener.apply {
+
+      /*selectVelocitat.onItemSelectedListener.apply {
          notes_select.text = "selectVelocitat = ${selectVelocitat.selectedItem}"
-      }
-
-      selectIdioma.onItemSelectedListener.apply {
-         if (selectIdioma.selectedItem.toString().isNotEmpty()) {
-            val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-            notes_select.text = "selectIdioma: ${selectIdioma.selectedItem}\nllengua: $llengua"
-            objVeus.setIdioma(llengua)
-            tts?.language = Locale(llengua)
-            canviaIdioma(llengua, applicationContext)
-            opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-            generaFormulari(applicationContext)
-         }
-      }
+      }*/
 
       /*selectIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
          override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
@@ -143,12 +129,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                contador += 1
                val llengua = parent.getItemAtPosition(position).toString().substring(0, 2).lowercase()
                //val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-               notes_select.text = "contador: ${contador}\nselectIdioma: ${selectIdioma.selectedItem.toString()}\nllengua: ${llengua}"
                objVeus.setIdioma(llengua)
                tts?.language = Locale(llengua)
-               canviaIdioma(llengua, applicationContext)
                opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-               generaFormulari(applicationContext)
+               ompleSelectorDeVeus(applicationContext)
             }else {
                idiomaItemSelected = true
             }
@@ -160,10 +144,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
    // Inicia els elements del formulari
    private fun generaFormulari(context: Context) {
-      selectVeu.adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
+      ompleSelectorDeVeus(context)
       selectVelocitat.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcVelocitat)
       selectRegistre.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcRegistre)
       selectIdioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
+   }
+   private fun ompleSelectorDeVeus(context: Context) {
+      selectVeu.adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
    }
 
    private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, llengua: String) {
