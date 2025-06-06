@@ -5,9 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
-import android.view.View
-import android.widget.AdapterView
+//import android.view.View
+//import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
@@ -68,9 +69,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private lateinit var selectVelocitat: Spinner
    private lateinit var selectRegistre: Spinner
    private val opcVelocitat = Array<String>(5) { n -> (0.9f + (n+1).toFloat()/10).toString() }
-   private val opcRegistre = Array<String>(20) { n -> ((n+1).toFloat()/10 + 0.2f).toString().substring(0,3) }
+   //private val opcRegistre = Array<String>(20) { n -> ((n+1).toFloat()/10 + 0.2f).toString().substring(0,3) }
+   private val opcRegistre = (3..20).map { (it * 0.1).toString() }.toTypedArray()
    private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
+   private lateinit var activaIdioma: Button
+   //private var idiomaItemSelected = false
    private var contador = 0
 
 
@@ -103,42 +107,54 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
          canta(veu, registre, velocitat, llengua)
       }
 
+      /*activaIdioma.setOnClickListener {
+         val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
+         notes_select.text = "selectIdioma: ${selectIdioma.selectedItem}\nllengua: $llengua"
+         objVeus.setIdioma(llengua)
+         tts?.language = Locale(llengua)
+         canviaIdioma(llengua, applicationContext)
+         opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
+         generaFormulari(applicationContext)
+      }*/
+
       selectVeu.onItemSelectedListener.apply {
-         notes_select.text = "selectVeu = ${selectVeu.selectedItem.toString()}"
-      }
-      selectRegistre.setOnClickListener {
-         notes_select.text = "selectRegistre = ${selectRegistre.selectedItem.toString()}"
+         notes_select.text = "selectVeu = ${selectVeu.selectedItem}"
       }
       selectVelocitat.onItemSelectedListener.apply {
-         notes_select.text = "selectVelocitat = ${selectVelocitat.selectedItem.toString()}"
+         notes_select.text = "selectVelocitat = ${selectVelocitat.selectedItem}"
+      }
+
+      selectIdioma.onItemSelectedListener.apply {
+         if (selectIdioma.selectedItem.toString().isNotEmpty()) {
+            val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
+            notes_select.text = "selectIdioma: ${selectIdioma.selectedItem}\nllengua: $llengua"
+            objVeus.setIdioma(llengua)
+            tts?.language = Locale(llengua)
+            canviaIdioma(llengua, applicationContext)
+            opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
+            generaFormulari(applicationContext)
+         }
       }
 
       /*selectIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
          override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-            contador += 1
-            val llengua = parent.getItemAtPosition(position).toString().substring(0, 2).lowercase()
-            //notes_select.text = "contador: ${contador}\nselectIdioma: ${selectIdioma.selectedItem.toString()}\nllengua: ${llengua}"
-            objVeus.setIdioma(llengua)
-            tts?.language = Locale(llengua)
-            canviaIdioma(llengua, applicationContext)
-            opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-            generaFormulari(applicationContext)
+            if (idiomaItemSelected) {
+               idiomaItemSelected = false
+               contador += 1
+               val llengua = parent.getItemAtPosition(position).toString().substring(0, 2).lowercase()
+               //val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
+               notes_select.text = "contador: ${contador}\nselectIdioma: ${selectIdioma.selectedItem.toString()}\nllengua: ${llengua}"
+               objVeus.setIdioma(llengua)
+               tts?.language = Locale(llengua)
+               canviaIdioma(llengua, applicationContext)
+               opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
+               generaFormulari(applicationContext)
+            }else {
+               idiomaItemSelected = true
+            }
          }
          override fun onNothingSelected(parent: AdapterView<*>) {}
       }*/
-
-      selectIdioma.onItemSelectedListener.apply {
-         contador += 1
-         if (selectIdioma.selectedItem.toString().isNotEmpty()) {
-            val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-            notes_select.text = "contador: ${contador}\nselectIdioma: ${selectIdioma.selectedItem.toString()}\nllengua: ${llengua}"
-            objVeus.setIdioma(llengua)
-            tts?.language = Locale(llengua)
-            canviaIdioma(llengua, applicationContext)
-            opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-            generaFormulari(applicationContext)
-         }
-      }
 
    }
 

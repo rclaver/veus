@@ -48,7 +48,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             app:srcCompat="@android:drawable/ic_media_play"
-            android:background="@null" />
+            android:background="@color/cardview_light_background" />
          <Spinner
             android:id="@+id/selectVelocitat"
             android:layout_width="wrap_content"
@@ -78,6 +78,12 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_marginStart="5dp" />
+
+      <Button
+         android:id="@+id/activaIdioma"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="idioma" />
    </LinearLayout>
 
    <TextView
