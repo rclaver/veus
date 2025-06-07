@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
-//import android.view.View
-//import android.widget.AdapterView
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.ImageButton
+import android.widget.NumberPicker
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    }
 
    object objVeus {
-      private var idioma: String = "ca"
+      //private var idioma: String = "ca"
       private val iVeus: Map<String, Array<Voice>> = mapOf(
          "ca" to arrayOf(
             Voice("ca-es-x-caf-local", Locale("ca_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null)
@@ -36,24 +36,25 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             Voice("es-es-x-eea-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
             Voice("es-es-x-eec-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
             Voice("es-es-x-eed-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
-            Voice("es-es-x-eee-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
             Voice("es-es-x-eef-local", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
-            Voice("es-es-x-eea-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
-            Voice("es-es-x-eec-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
-            Voice("es-es-x-eed-network", Locale("es_ES"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
             Voice("es-US-language", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
+            Voice("es-us-x-sfb-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
             Voice("es-us-x-esd-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
             Voice("es-us-x-esf-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
-            Voice("es-us-x-esc-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
-            Voice("es-us-x-sfb-local", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, null),
-            Voice("es-us-x-esc-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
-            Voice("es-us-x-esf-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
-            Voice("es-us-x-esd-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null),
-            Voice("es-us-x-sfb-network", Locale("es_US"), Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, true, null)
          )
       )
-      fun setIdioma(i: String) {idioma = i}
-      fun getIdioma() = idioma
+      //veu_0: dona greu 0: es-ES-language
+      //veu_1: dona greu 1: es-es-x-eea-local
+      //veu_2: dona greu 2: es-es-x-eec-local
+      //veu_3: home greu 1: es-es-x-eed-local
+      //veu_4: home greu 2: es-es-x-eef-local
+      //veu_5: dona US greu 0: es-US-language
+      //veu_6: dona US greu 1: es-us-x-sfb-local
+      //veu_7: home US greu 0: es-us-x-esd-local
+      //veu_8: home US greu 1: es-us-x-esf-local
+
+      //fun setIdioma(i: String) {idioma = i}
+      //fun getIdioma() = idioma
       fun getVeu(idioma: String, elem:Int): Voice = iVeus[idioma]!![elem]
       fun getVeus(idioma: String): Array<Voice>? { return iVeus[idioma] }
    }
@@ -62,20 +63,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private var idioma: Locale = Locale("ca", "ES")
    private val engine = "com.google.android.tts" // Motor de Google TTS
    private lateinit var notes: TextView
-   private lateinit var notes_select: TextView
    private lateinit var selectVeu: Spinner
    private var opcionsVeu = arrayOf("veu_0")
    private lateinit var play: ImageButton
    private lateinit var selectVelocitat: Spinner
-   private lateinit var selectRegistre: Spinner
-   private val opcVelocitat = Array<String>(5) { n -> (0.9f + (n+1).toFloat()/10).toString() }
+   private val opcVelocitat = Array<String>(6) { n -> (0.9f + (n+1).toFloat()/10).toString() }
+   private lateinit var selectRegistre: NumberPicker
    //private val opcRegistre = Array<String>(20) { n -> ((n+1).toFloat()/10 + 0.2f).toString().substring(0,3) }
    private val opcRegistre = (3..20).map { (it * 0.1).toString().substring(0,3) }.toTypedArray()
    private lateinit var selectIdioma: Spinner
    private val opcionsIdioma = arrayOf("Català", "English", "Español")
-   private lateinit var activaIdioma: Button
-   //private var idiomaItemSelected = false
-   private var contador = 0
+   private var idiomaItemSelected = false
+   private var registreSelectedItem = ""
 
 
    override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,47 +89,33 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       selectVelocitat = findViewById(R.id.selectVelocitat)
       selectRegistre = findViewById(R.id.selectRegistre)
       selectIdioma = findViewById(R.id.selectIdioma)
-      activaIdioma = findViewById(R.id.activaIdioma)
       notes = findViewById(R.id.notes)
-      notes_select = findViewById(R.id.notes_select)
 
       generaFormulari(applicationContext)
 
+      selectRegistre.setOnValueChangedListener { _, _, newVal ->
+         registreSelectedItem = opcRegistre[newVal]
+      }
+
       play.setOnClickListener {
          val veu = selectVeu.selectedItem.toString()
-         val registre = if (selectRegistre.selectedItem.toString().isNotEmpty()) selectRegistre.selectedItem.toString().toFloat() else 1.0f
          val velocitat = if (selectVelocitat.selectedItem.toString().isNotEmpty()) selectVelocitat.selectedItem.toString().toFloat() else 1.0f
-         //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
+         val registre = if (registreSelectedItem.isNotEmpty()) registreSelectedItem.toFloat() else 1.0f
          //val velocitat: Float = if (velocitat.text.toString() != "") velocitat.text.toString().toFloat() else 1.0f
+         //val registre: Float = if (registre.text.toString() != "") registre.text.toString().toFloat() else 1.0f
          val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-         opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-         ompleSelectorDeVeus(applicationContext)
          canta(veu, registre, velocitat, llengua)
       }
 
-      activaIdioma.setOnClickListener {
-         val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-         notes_select.text = "selectIdioma: ${selectIdioma.selectedItem}\nllengua: $llengua"
-         objVeus.setIdioma(llengua)
-         tts?.language = Locale(llengua)
-         canviaIdioma(llengua, applicationContext)
-         opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
-         ompleSelectorDeVeus(applicationContext)
-      }
-
-      /*selectVelocitat.onItemSelectedListener.apply {
-         notes_select.text = "selectVelocitat = ${selectVelocitat.selectedItem}"
-      }*/
-
-      /*selectIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+      selectIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
          override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
             if (idiomaItemSelected) {
                idiomaItemSelected = false
-               contador += 1
-               val llengua = parent.getItemAtPosition(position).toString().substring(0, 2).lowercase()
                //val llengua = selectIdioma.selectedItem.toString().substring(0, 2).lowercase()
-               objVeus.setIdioma(llengua)
+               val llengua = parent.getItemAtPosition(position).toString().substring(0, 2).lowercase()
+               //objVeus.setIdioma(llengua)
                tts?.language = Locale(llengua)
+               canviaIdioma(llengua, applicationContext)
                opcionsVeu = Array(objVeus.getVeus(llengua)!!.size) { i -> "veu_${i}" }
                ompleSelectorDeVeus(applicationContext)
             }else {
@@ -138,7 +123,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
          }
          override fun onNothingSelected(parent: AdapterView<*>) {}
-      }*/
+      }
 
    }
 
@@ -146,11 +131,14 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    private fun generaFormulari(context: Context) {
       ompleSelectorDeVeus(context)
       selectVelocitat.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcVelocitat)
-      selectRegistre.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcRegistre)
+      selectRegistre.minValue = 0
+      selectRegistre.maxValue = opcRegistre.size - 1
+      selectRegistre.displayedValues = opcRegistre
+      selectRegistre.wrapSelectorWheel = false
       selectIdioma.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsIdioma)
    }
    private fun ompleSelectorDeVeus(context: Context) {
-      selectVeu.adapter = ArrayAdapter(context, R.layout.spinner, opcionsVeu)
+      selectVeu.adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, opcionsVeu)
    }
 
    private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, llengua: String) {

@@ -22,10 +22,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="veu"/>
+
          <TextView
-            android:layout_width="30dp"
+            android:layout_width="53dp"
             android:layout_height="wrap_content"
-            android:text="inici"/>
+            android:text="inici" />
          <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -43,18 +44,19 @@
             android:id="@+id/selectVeu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
          <ImageButton
             android:id="@+id/play"
-            android:layout_width="30dp"
+            android:layout_width="55dp"
             android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/ic_media_play"
-            android:background="@color/cardview_light_background" />
+            android:background="@null"
+            app:srcCompat="@android:drawable/ic_media_play" />
          <Spinner
             android:id="@+id/selectVelocitat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp" />
-         <Spinner
+         <NumberPicker
             android:id="@+id/selectRegistre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -78,22 +80,10 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_marginStart="5dp" />
-
-      <Button
-         android:id="@+id/activaIdioma"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="canvia idioma" />
    </LinearLayout>
 
    <TextView
       android:id="@+id/notes"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="20dp" />
-
-   <TextView
-      android:id="@+id/notes_select"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="20dp" />
