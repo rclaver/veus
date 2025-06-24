@@ -22,6 +22,25 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       fun set(t: TextToSpeech?) { tts = t }
       fun get(): TextToSpeech? { return tts }
       fun inici() { tts?.language = Locale("ca_ES") }
+
+      fun llistaNomsDeVeus(local: String): Array<String> {
+         var llista: Array<String> = arrayOf()
+         tts?.voices?.forEach {
+            if (it.locale.toString() == local) {
+               llista += it.name
+            }
+         }
+         return llista
+      }
+      fun llistaDeVeus(local: String): Array<Voice> {
+         var llista: Array<Voice> = arrayOf()
+         tts?.voices?.forEach {
+            if (it.locale.toString() == local) {
+               llista += it
+            }
+         }
+         return llista
+      }
       operator fun invoke() = tts
    }
 
@@ -143,15 +162,22 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
    private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, llengua: String) {
       val text = mapOf(
-         "ca" to "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia. Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa.",
+         "ca" to "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia.",  // Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa.",
          "en" to "The lady gave them to me a year ago, you know. She was really happy because she'd won bingo and said I'd brought her luck that day. It turns out I'd left the vacuum cleaner parked wrong, and she tripped before leaving the house.",
          "es" to "La señora me las regaló hace un año, ¿sabe? Estaba muy contenta porque había hecho bingo y decía que yo le había dado suerte ese día. Resulta que dejé la aspiradora mal aparcada, y ella se tropezó antes de salir de casa."
       )
       val regexVeu = """.*?_([0-9]+)""".toRegex()
       val iVeu = regexVeu.find(veuSeleccionada)!!.groupValues[1].toInt()
       val veu = objVeus.getVeu(llengua, iVeu)
+      //notes.text = "veuSeleccionada: ${veuSeleccionada}\nveu: ${veu.name}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $llengua"
 
-      notes.text = "veuSeleccionada: ${veuSeleccionada}\nveu: ${veu.name}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $llengua"
+      val veus = objTTS.llistaNomsDeVeus("en_US")
+      var texto = ""
+      veus.forEach {texto = texto + it + "\n"}
+
+      val veus2 = objTTS.llistaDeVeus("en_US")
+      veus2.forEach {texto = texto + it.toString() + "\n"}
+      notes.text = texto
 
       tts?.setPitch(registre)
       tts?.setSpeechRate(velocitat)
