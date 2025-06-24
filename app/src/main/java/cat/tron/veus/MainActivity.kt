@@ -1,8 +1,12 @@
 package cat.tron.veus
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import android.view.View
@@ -12,7 +16,10 @@ import android.widget.ImageButton
 import android.widget.NumberPicker
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
@@ -161,7 +168,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
    }
 
    private fun canta(veuSeleccionada: String, registre: Float, velocitat: Float, llengua: String) {
-      val text = mapOf(
+      val textVeu = mapOf(
          "ca" to "La senyora me les va regalar fa un any, sap? Estava molt contenta perquè havia fet bingo i deia que jo li havia donat sort aquell dia.",  // Resulta que vaig deixar l'aspiradora mal aparcada, i ella va ensopegar-hi abans de sortir de casa.",
          "en" to "The lady gave them to me a year ago, you know. She was really happy because she'd won bingo and said I'd brought her luck that day. It turns out I'd left the vacuum cleaner parked wrong, and she tripped before leaving the house.",
          "es" to "La señora me las regaló hace un año, ¿sabe? Estaba muy contenta porque había hecho bingo y decía que yo le había dado suerte ese día. Resulta que dejé la aspiradora mal aparcada, y ella se tropezó antes de salir de casa."
@@ -172,16 +179,17 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       //notes.text = "veuSeleccionada: ${veuSeleccionada}\nveu: ${veu.name}\nregistre: ${registre}\nvelocitat: ${velocitat}\nidioma: $llengua"
 
       val veus = objTTS.llistaNomsDeVeus("en_US")
-      var texto = ""
-      veus.forEach {texto = texto + it + "\n"}
+      var text = ""
+      veus.forEach {text = text + it + "\n"}
 
       val veus2 = objTTS.llistaDeVeus("en_US")
-      veus2.forEach {texto = texto + it.toString() + "\n"}
-      notes.text = texto
+      veus2.forEach {text = text + it.toString() + "\n"}
+      desaArxiuADownloads(text, applicationContext)
+      notes.text = text
 
       tts?.setPitch(registre)
       tts?.setSpeechRate(velocitat)
-      tts?.speak(text[llengua], TextToSpeech.QUEUE_FLUSH, null, null)
+      tts?.speak(textVeu[llengua], TextToSpeech.QUEUE_FLUSH, null, null)
       tts?.voice = veu
       while (tts?.isSpeaking==true) { true }
    }
@@ -214,6 +222,54 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
       context.resources.updateConfiguration(configuracio, displayMetrics)
       configuracio.locale = Locale(llengua)
       context.resources.updateConfiguration(configuracio, displayMetrics)
+   }
+
+   fun desaArxiuADownloads(dades: String, context: Context) {
+      val arxiu = "dadesVeus.txt"
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+         saveToPublicDownloads(arxiu, dades, context)
+      } else {
+         saveToDownloadsLegacy(arxiu, dades, context)
+      }
+   }
+
+   @RequiresApi(Build.VERSION_CODES.Q)
+   private fun saveToPublicDownloads(arxiu: String, dades: String, context: Context) {
+      val resolver = context.contentResolver
+
+      val contentValues = ContentValues().apply {
+         put(MediaStore.MediaColumns.DISPLAY_NAME, arxiu)
+         put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+         put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+      }
+
+      try {
+         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+         uri?.let {
+            resolver.openOutputStream(it)?.use { outputStream ->
+               outputStream.write(dades.toByteArray())
+            }
+         }
+      } catch (e: Exception) {
+         e.printStackTrace()
+      }
+   }
+   private fun saveToDownloadsLegacy(arxiu: String, dades: String, context: Context) {
+      val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+      if (!downloadsDir.exists()) {
+         downloadsDir.mkdirs()
+      }
+      val file = File(downloadsDir, arxiu)
+      FileOutputStream(file).use {
+         it.write(dades.toByteArray())
+      }
+   }
+
+   fun desaArxiuInternament(dades: String, context: Context) {
+      val arxiu = "dadesVeus.txt"
+      context.openFileOutput(arxiu, Context.MODE_PRIVATE).use {
+         it.write(dades.toString().toByteArray())
+      }
    }
 
    override fun onDestroy() {
