@@ -14,33 +14,30 @@ pip3 install --user pydub speechrecognition
 import warnings
 warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
 
-import threading
-import queue
 import tkinter as tk
-from tkinter import ttk, filedialog
-import speech_recognition as sr
-
-import sys, os, re, glob, time, shutil
+from tkinter import ttk
 import torch
 from TTS.api import TTS
-import wave
+from pydub.playback import play
+#import speech_recognition as sr
+#import wave
 
 
 class MostraDeVeus:
    def __init__(self, root):
       self.root = root
       self.root.title("Veus")
-      self.root.minsize(800, 600)
+      self.root.minsize(600, 200)
 
       # Variables
       self.arxiu_wav = "tmp/tmp.wav"
       self.selected_voice = tk.StringVar(value="")
       self.dir_images = "static/img"
       self.images = {}
-      self.default_state = "Fes clic a inici"
-      self.status_text = tk.StringVar(value=self.default_state)
       self.tts = None
+      self.n_voice = 0
       self.voices = {}
+      self.text = "Que tingui sentit de l’humor no significa que no sigui femenina. Estaràs d’acord amb mi que les dones, en teoria, poden tenir sentit de l’humor."
 
       self.carrega_imatges()
       self.carrega_veus()
@@ -72,15 +69,15 @@ class MostraDeVeus:
       ttk.Label(main_frame, text="Mostra de les veus del model Coqui tts", font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
       # Selector de veus
-      ttk.Label(main_frame, text="veu:", font=("Arial",9,"bold")).grid(row=2, column=0, sticky=(tk.N,tk.W), pady=(5,10))
+      ttk.Label(main_frame, text="veu:", font=("Arial",9,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.W), pady=(5,10))
       voice_frame = ttk.Frame(main_frame)
-      voice_frame.grid(row=2, column=1, columnspan=2, sticky=(tk.N, tk.W, tk.W), pady=(5,10))
+      voice_frame.grid(row=1, column=1, columnspan=2, sticky=(tk.N, tk.W, tk.W), pady=(10,10))
       voice_frame.columnconfigure(0, weight=1)
 
       # Combobox per seleccionar veu
       self.voice_combo = ttk.Combobox(
          voice_frame,
-         values=list(self.voices.keys()),
+         values=self.voices,
          state="readonly",
          font=("Arial",9),
          width=16
@@ -88,23 +85,20 @@ class MostraDeVeus:
       self.voice_combo.grid(row=0, column=0, sticky=tk.W, padx=(0, 10))
 
       # Etiqueta que mostra el codi de la veu seleccionada
-      self.idioma_actiu = ttk.Label(
+      self.veu_actual = ttk.Label(
          voice_frame,
          text=f"veu actual: {self.selected_voice.get()}",
-         font=("Arial", 9),
+         font=("Arial", 10),
          foreground="#0000a0"
       )
-      self.idioma_actiu.grid(row=0, column=1, sticky=tk.W)
+      self.veu_actual.grid(row=0, column=1, sticky=tk.W)
 
       # Vincular l'event de canvi de selecció
       self.voice_combo.bind('<<ComboboxSelected>>', self.on_voice_change)
 
-      # Estat
-      ttk.Label(main_frame, textvariable=self.status_text, font=("Arial",9,"italic")).grid(row=3, column=0, columnspan=3, sticky=(tk.N,tk.W))
-
       # Botons de control
       button_frame = ttk.Frame(main_frame)
-      button_frame.grid(row=4, column=0, columnspan=3, sticky=tk.N, pady=(15,0))
+      button_frame.grid(row=2, column=0, columnspan=3, sticky=tk.N, pady=(15,0))
 
       ttk.Button(button_frame, image=self.images['anterior'], command=self.anterior).pack(side=tk.LEFT, padx=5)
       ttk.Button(button_frame, image=self.images['inici'], command=self.text_to_audio).pack(side=tk.LEFT, padx=5)
@@ -113,34 +107,36 @@ class MostraDeVeus:
 
 
    def on_voice_change(self, event):
-      '''Actualitza l'etiqueta del codi de veu quan canvia la selecció'''
+      '''Actualitza l'etiqueta de la veu quan canvia la selecció'''
       selected_voice_name = self.voice_combo.get()
       self.selected_voice.set(selected_voice_name)
-      self.idioma_actiu.config(text=f"veu actual: {selected_voice_name}")
-      self.status_text.set(f"Veu cambiada a: {selected_voice_name}")
+      self.veu_actual.config(text=f"veu actual: {selected_voice_name}")
 
-   def text_to_audio(self, text, id_veu):
+   def mostra_veu_actual(self):
+      '''Actualitza l'etiqueta de la veu'''
+      self.selected_voice.set(self.voices[self.n_voice])
+      self.veu_actual.config(text=f"veu actual: {self.voices[self.n_voice]}")
+
+   def text_to_audio(self):
       #print("tts: ", self.tts)
       #print("tts.speakers: ", self.tts.speakers)
 
       # Text to speech list of amplitude values as output
-      wav = self.tts.tts(text, speaker=id_veu)
+      wav = self.tts.tts(self.text, speaker=self.voices[self.n_voice])
       play(wav)
 
       # Text to speech to a file
-      self.tts.tts_to_file(text, speaker=id_veu, file_path=self.arxiu_wav, verbose=False)
+      self.tts.tts_to_file(self.text, speaker=self.voices[self.n_voice], file_path=self.arxiu_wav, verbose=False)
       #audio_pendent = AudioSegment.from_wav(self.arxiu_wav)
       #play(audio_pendent)
 
    def anterior(self):
-      self.status_text.set(f"Escoltant [{self.selected_voice.get()}]")
+      self.n_voice -= 1
+      self.mostra_veu_actual()
 
    def seguent(self):
-      self.status_text.set(f"Escoltant [{self.selected_voice.get()}]")
-
-   def actualitza_estat(self, status):
-      """Actualitza l'interfase amb el resultat del reconeixement de veu"""
-      self.status_text.set(status)
+      self.n_voice += 1
+      self.mostra_veu_actual()
 
 
 if __name__ == "__main__":
