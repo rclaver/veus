@@ -35,12 +35,15 @@ class MostraDeVeus:
       self.arxiu_sortida = "tmp/llista_de_veus.txt"
       self.selected_voice = tk.StringVar(value="")
       self.veu_actual = tk.StringVar(value="")
+      self.veu_actual2 = tk.StringVar(value="")
       self.dir_images = "static/img"
       self.images = {}
       self.tts = None
       self.n_voice = 0
       self.voices = {}
+      self.genere = tk.StringVar()
       self.text = "Que tingui sentit de l’humor no significa que no sigui femenina. Estaràs d’acord amb mi que les dones, en teoria, poden tenir sentit de l’humor."
+      self.bg_color = '#dddddd'
 
       self.carrega_imatges()
       self.carrega_veus()
@@ -70,7 +73,7 @@ class MostraDeVeus:
       main_frame.rowconfigure(4, weight=1)
 
       # Títol
-      ttk.Label(main_frame, text="Mostra de les veus del model Coqui tts", font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=3, pady=(0, 10))
+      ttk.Label(main_frame, text="Mostra de les veus del model Coqui tts", font=("Arial",16,"bold")).grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
       # Selector de veus
       ttk.Label(main_frame, text="veu:", font=("Arial",9,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.W), pady=(5,10))
@@ -92,11 +95,19 @@ class MostraDeVeus:
       self.voice_combo.bind('<<ComboboxSelected>>', self.on_voice_change)
 
       # Etiqueta que mostra el codi de la veu seleccionada
-      ttk.Label(main_frame, textvariable=self.veu_actual, font=("Arial",9)).grid(row=2, column=0, columnspan=3, sticky=(tk.N,tk.W))
+      ttk.Label(main_frame, textvariable=self.veu_actual, font=("Arial",9)).grid(row=2, column=1, sticky=(tk.N,tk.W))
+      ttk.Label(main_frame, textvariable=self.veu_actual2, font=("Arial",9)).grid(row=3, column=1, sticky=(tk.N,tk.W))
+
+      # Àrea de selecció de gènere
+      ttk.Label(main_frame, text="gènere:", font=("Arial",9,"bold")).grid(row=4, column=0, sticky=(tk.N,tk.W), pady=(10,0))
+      genere_frame = ttk.Frame(main_frame)
+      genere_frame.grid(row=4, column=1, sticky=(tk.N,tk.W), pady=0)
+      tk.Radiobutton(genere_frame, text="home", variable=self.genere, value="home", font=("Arial",9), bg=self.bg_color).grid(row=0, column=0, sticky=tk.W)
+      tk.Radiobutton(genere_frame, text="dona", variable=self.genere, value="dona", font=("Arial",9), bg=self.bg_color).grid(row=1, column=0, sticky=tk.W)
 
       # Botons de control
       button_frame = ttk.Frame(main_frame)
-      button_frame.grid(row=3, column=0, columnspan=3, sticky=tk.N, pady=(30,0))
+      button_frame.grid(row=5, column=0, columnspan=3, sticky=tk.N, pady=(10,0))
 
       ttk.Button(button_frame, image=self.images['anterior'], command=self.anterior).pack(side=tk.LEFT, padx=5)
       ttk.Button(button_frame, image=self.images['inici'], command=self.text_to_audio).pack(side=tk.LEFT, padx=5)
@@ -129,26 +140,34 @@ class MostraDeVeus:
 
    def desar(self):
       """Desa el nom de la veu actual en un arxiu de text"""
+      registre = f"{self.voices[self.n_voice]}\t{self.genere}"
       try:
          with open(self.arxiu_sortida, 'a', encoding='utf-8') as file:
-            file.write(self.voices[self.n_voice])
+            file.write(registre)
       except Exception as e:
-         self.veu_actual.set(f"Error en desar: {str(e)}")
+         self.veu_actual.set(self.veu_retallada(f"Error en desar: {str(e)}"))
 
    def on_voice_change(self, event):
       '''Actualitza l'etiqueta de la veu quan canvia la selecció'''
       selected_voice_name = self.voice_combo.get()
       self.selected_voice.set(selected_voice_name)
-      self.veu_actual.set(selected_voice_name)
+      self.veu_actual.set(self.veu_retallada(selected_voice_name))
 
       self.n_voice = self.voices.index(selected_voice_name)
       self.text_to_audio()
 
    def mostra_veu_actual(self):
       '''Actualitza l'etiqueta de la veu'''
-      self.veu_actual.set(self.voices[self.n_voice])
+      self.veu_actual.set(self.veu_retallada(self.voices[self.n_voice]))
       self.selected_voice.set(self.voices[self.n_voice])
       self.voice_combo.set(self.voices[self.n_voice])
+
+   def veu_retallada(self, text):
+      if (text[70:] != ""):
+         self.veu_actual2.set(f"- {text[70:]}")
+      else:
+         self.veu_actual2.set("")
+      return text[0:70]
 
 
 if __name__ == "__main__":
