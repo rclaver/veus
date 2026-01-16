@@ -8,7 +8,7 @@
 Instalació prèvia:
 sudo apt-get install python-tk
 sudo apt-get install python3-pil python3-pil.imagetk
-pip3 install --user pydub
+pip install --no-cache-dir pydub torch elevenlabs
 """
 
 import warnings
@@ -21,12 +21,15 @@ from TTS.api import TTS
 from pydub import AudioSegment
 from pydub.playback import play
 
+import elevenlabs as e
+from elevenlabs.client import ElevenLabs
+
 
 class MostraDeVeus:
    def __init__(self, root):
       self.root = root
       self.root.title("Veus")
-      self.root.minsize(600, 230)
+      self.root.minsize(600, 400)
 
       # Variables
       self.twav = "tmp/tmp.wav"
@@ -36,6 +39,9 @@ class MostraDeVeus:
       self.veu_actual2 = tk.StringVar(value="")
       self.dir_images = "static/img"
       self.images = {}
+      self.model = ['coqui-tts', 'ElevenLabs']
+      self.model_actual = "coqui-tts"
+      self.client = None
       self.tts = None
       self.n_voice = 0
       self.voices = {}
@@ -57,9 +63,29 @@ class MostraDeVeus:
       self.images['sortir'] = tk.PhotoImage(file=f"{self.dir_images}/sortir.png")
 
    def carrega_veus(self):
-      device = "cuda" if torch.cuda.is_available() else "cpu"
-      self.tts = TTS("tts_models/ca/custom/vits", progress_bar=False).to(device)
-      self.voices = self.tts.speakers
+      if self.model_actual == "coqui-tts":
+         device = "cuda" if torch.cuda.is_available() else "cpu"
+         self.tts = TTS("tts_models/ca/custom/vits", progress_bar=False).to(device)
+         self.voices = self.tts.speakers
+
+      elif self.model_actual == "ElevenLabs":
+         try:
+            with open("static/API_Key_ElevenLabs", 'r') as f:
+               k = f.read()
+            self.client = ElevenLabs(api_key = k)
+            self.voices.clear()
+            el_veus = self.client.voices.get_all()
+            for v in el_veus.voices:
+               if v.fine_tuning.language == 'ca' or v.fine_tuning.language == 'es':
+                  self.voices.append(v.voice_id)
+         except Exception as ex:
+            self.missatge.set(f"Error carrega_veus ({self.model_actual}): {str(ex)}")
+
+      try:
+         self.n_voice = 0
+         self.voice_combo.configure(values=self.voices)
+      except:
+         pass
 
    def create_widgets(self):
       # Frame principal
@@ -70,15 +96,34 @@ class MostraDeVeus:
       self.root.columnconfigure(0, weight=1)
       self.root.rowconfigure(0, weight=1)
       main_frame.columnconfigure(1, weight=1)
-      main_frame.rowconfigure(4, weight=1)
+      main_frame.rowconfigure(6, weight=1)
 
       # Títol
       ttk.Label(main_frame, text="Mostra de les veus del model Coqui tts", font=("Arial",16,"bold")).grid(row=0, column=0, columnspan=2, pady=(0, 10))
 
+      # Selector de model
+      ttk.Label(main_frame, text="model: ", font=("Arial",9,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.E), pady=(5,10))
+      model_frame = ttk.Frame(main_frame)
+      model_frame.grid(row=1, column=1, sticky=(tk.N, tk.W), pady=(10,10))
+      model_frame.columnconfigure(0, weight=1)
+
+      # Combobox per seleccionar el model
+      self.model_combo = ttk.Combobox(
+         model_frame,
+         values=self.model,
+         state="readonly",
+         font=("Arial",9),
+         width=20
+      )
+      self.model_combo.grid(row=0, column=0, sticky=tk.W, padx=5)
+
+      # Vincular l'event de canvi de selecció
+      self.model_combo.bind('<<ComboboxSelected>>', self.on_model_change)
+
       # Selector de veus
-      ttk.Label(main_frame, text="veu: ", font=("Arial",9,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.E), pady=(5,10))
+      ttk.Label(main_frame, text="veu: ", font=("Arial",9,"bold")).grid(row=2, column=0, sticky=(tk.N,tk.E), pady=(5,10))
       voice_frame = ttk.Frame(main_frame)
-      voice_frame.grid(row=1, column=1, sticky=(tk.N, tk.W), pady=(10,10))
+      voice_frame.grid(row=2, column=1, sticky=(tk.N, tk.W), pady=(10,10))
       voice_frame.columnconfigure(0, weight=1)
 
       # Combobox per seleccionar veu
@@ -99,10 +144,10 @@ class MostraDeVeus:
       #ttk.Label(main_frame, textvariable=self.veu_actual2, font=("Arial",9)).grid(row=3, column=1, sticky=(tk.N,tk.W))
 
       # Quadre d'entrada de dades
-      ttk.Label(main_frame, text="nou nom: ", font=("Arial",9,"bold")).grid(row=2, column=0, sticky=(tk.N,tk.E), pady=(5,5))
+      ttk.Label(main_frame, text="nou nom: ", font=("Arial",9,"bold")).grid(row=3, column=0, sticky=(tk.N,tk.E), pady=(5,5))
       nou_nom_frame = ttk.Frame(main_frame)
-      nou_nom_frame.grid(row=2, column=1, sticky=(tk.N,tk.W), pady=(5,5))
-      ttk.Entry(main_frame, textvariable=self.nou_nom, font=("Arial",9)).grid(row=2, column=1, sticky=(tk.N,tk.W))
+      nou_nom_frame.grid(row=3, column=1, sticky=(tk.N,tk.W), pady=(5,5))
+      ttk.Entry(main_frame, textvariable=self.nou_nom, font=("Arial",9)).grid(row=3, column=1, sticky=(tk.N,tk.W))
 
       # Àrea de selecció de gènere
       ttk.Label(main_frame, text="gènere: ", font=("Arial",9,"bold")).grid(row=4, column=0, sticky=(tk.N,tk.E), pady=(5,5))
@@ -147,8 +192,14 @@ class MostraDeVeus:
       try:
          with open(self.arxiu_sortida, 'a', encoding='utf-8') as file:
             file.write(registre)
-      except Exception as e:
-         self.missatge.set(f"Error en desar: {str(e)}")
+      except Exception as ex:
+         self.missatge.set(f"Error en desar: {str(ex)}")
+
+   def on_model_change(self, event):
+      '''Actualitza la llista de veus quan canvia la selecció del model'''
+      self.model_actual = self.model_combo.get()
+      self.carrega_veus()
+      #self.voice_combo.set(self.voices[0])
 
    def on_voice_change(self, event):
       '''Actualitza l'etiqueta de la veu quan canvia la selecció'''
