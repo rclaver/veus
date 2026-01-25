@@ -19,7 +19,7 @@ from tkinter import ttk
 import torch
 from TTS.api import TTS
 from pydub import AudioSegment
-from pydub.playback import play
+from pydub.playback import play as pydub_play
 
 import elevenlabs as e
 from elevenlabs.client import ElevenLabs
@@ -32,6 +32,7 @@ class MostraDeVeus:
       self.root.minsize(600, 400)
 
       # Variables
+      self.tmp3 = "tmp/tmp.mp3"
       self.twav = "tmp/tmp.wav"
       self.arxiu_sortida = "tmp/llista_de_veus.txt"
       self.selected_voice = tk.StringVar(value="")
@@ -102,7 +103,7 @@ class MostraDeVeus:
       ttk.Label(main_frame, text="Mostra de les veus del model Coqui tts", font=("Arial",16,"bold")).grid(row=0, column=0, columnspan=2, pady=(0, 10))
 
       # Selector de model
-      ttk.Label(main_frame, text="model: ", font=("Arial",9,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.E), pady=(5,10))
+      ttk.Label(main_frame, text="model: ", font=("Arial",10,"bold")).grid(row=1, column=0, sticky=(tk.N,tk.E), pady=(5,10))
       model_frame = ttk.Frame(main_frame)
       model_frame.grid(row=1, column=1, sticky=(tk.N, tk.W), pady=(10,10))
       model_frame.columnconfigure(0, weight=1)
@@ -112,7 +113,7 @@ class MostraDeVeus:
          model_frame,
          values=self.model,
          state="readonly",
-         font=("Arial",9),
+         font=("Arial",10),
          width=20
       )
       self.model_combo.grid(row=0, column=0, sticky=tk.W, padx=5)
@@ -121,7 +122,7 @@ class MostraDeVeus:
       self.model_combo.bind('<<ComboboxSelected>>', self.on_model_change)
 
       # Selector de veus
-      ttk.Label(main_frame, text="veu: ", font=("Arial",9,"bold")).grid(row=2, column=0, sticky=(tk.N,tk.E), pady=(5,10))
+      ttk.Label(main_frame, text="veu: ", font=("Arial",10,"bold")).grid(row=2, column=0, sticky=(tk.N,tk.E), pady=(5,10))
       voice_frame = ttk.Frame(main_frame)
       voice_frame.grid(row=2, column=1, sticky=(tk.N, tk.W), pady=(10,10))
       voice_frame.columnconfigure(0, weight=1)
@@ -131,7 +132,7 @@ class MostraDeVeus:
          voice_frame,
          values=self.voices,
          state="readonly",
-         font=("Arial",9),
+         font=("Arial",10),
          width=70
       )
       self.voice_combo.grid(row=0, column=0, sticky=tk.W, padx=5)
@@ -140,21 +141,21 @@ class MostraDeVeus:
       self.voice_combo.bind('<<ComboboxSelected>>', self.on_voice_change)
 
       # Etiqueta que mostra el codi de la veu seleccionada
-      #ttk.Label(main_frame, textvariable=self.veu_actual, font=("Arial",9)).grid(row=2, column=1, sticky=(tk.N,tk.W))
-      #ttk.Label(main_frame, textvariable=self.veu_actual2, font=("Arial",9)).grid(row=3, column=1, sticky=(tk.N,tk.W))
+      #ttk.Label(main_frame, textvariable=self.veu_actual, font=("Arial",10)).grid(row=2, column=1, sticky=(tk.N,tk.W))
+      #ttk.Label(main_frame, textvariable=self.veu_actual2, font=("Arial",10)).grid(row=3, column=1, sticky=(tk.N,tk.W))
 
       # Quadre d'entrada de dades
-      ttk.Label(main_frame, text="nou nom: ", font=("Arial",9,"bold")).grid(row=3, column=0, sticky=(tk.N,tk.E), pady=(5,5))
+      ttk.Label(main_frame, text="nou nom: ", font=("Arial",10,"bold")).grid(row=3, column=0, sticky=(tk.N,tk.E), pady=(5,5))
       nou_nom_frame = ttk.Frame(main_frame)
       nou_nom_frame.grid(row=3, column=1, sticky=(tk.N,tk.W), pady=(5,5))
-      ttk.Entry(main_frame, textvariable=self.nou_nom, font=("Arial",9)).grid(row=3, column=1, sticky=(tk.N,tk.W))
+      ttk.Entry(main_frame, textvariable=self.nou_nom, font=("Arial",10)).grid(row=3, column=1, sticky=(tk.N,tk.W))
 
       # Àrea de selecció de gènere
-      ttk.Label(main_frame, text="gènere: ", font=("Arial",9,"bold")).grid(row=4, column=0, sticky=(tk.N,tk.E), pady=(5,5))
+      ttk.Label(main_frame, text="gènere: ", font=("Arial",10,"bold")).grid(row=4, column=0, sticky=(tk.N,tk.E), pady=(5,5))
       genere_frame = ttk.Frame(main_frame)
       genere_frame.grid(row=4, column=1, sticky=(tk.N,tk.W), pady=(5,5))
-      tk.Radiobutton(genere_frame, text="home", variable=self.genere, value="home", font=("Arial",9), bg=self.bg_color).grid(row=0, column=0, sticky=tk.W, padx=5)
-      tk.Radiobutton(genere_frame, text="dona", variable=self.genere, value="dona", font=("Arial",9), bg=self.bg_color).grid(row=0, column=1, sticky=tk.W, padx=5)
+      tk.Radiobutton(genere_frame, text="home", variable=self.genere, value="home", font=("Arial",10), bg=self.bg_color).grid(row=0, column=0, sticky=tk.W, padx=5)
+      tk.Radiobutton(genere_frame, text="dona", variable=self.genere, value="dona", font=("Arial",10), bg=self.bg_color).grid(row=0, column=1, sticky=tk.W, padx=5)
 
       # Botons de control
       button_frame = ttk.Frame(main_frame)
@@ -167,16 +168,32 @@ class MostraDeVeus:
       ttk.Button(button_frame, image=self.images['sortir'], command=self.root.destroy).pack(side=tk.LEFT, padx=(15,0))
 
       # Etiqueta que mostra un missatge
-      ttk.Label(main_frame, textvariable=self.missatge, font=("Arial",9)).grid(row=6, column=0, columnspan=2, sticky=(tk.N,tk.W), pady=5)
+      ttk.Label(main_frame, textvariable=self.missatge, font=("Arial",10)).grid(row=6, column=0, columnspan=2, sticky=(tk.N,tk.W), pady=5)
 
 
    def text_to_audio(self):
       self.mostra_veu_actual()
 
-      # Text to speech to a file
-      self.tts.tts_to_file(self.text, speaker=self.voices[self.n_voice], file_path=self.twav, verbose=False)
-      audio = AudioSegment.from_wav(self.twav)
-      play(audio)
+      if self.model_actual == "coqui-tts":
+         # Text to speech to a file
+         self.tts.tts_to_file(self.text, speaker=self.voices[self.n_voice], file_path=self.twav, verbose=False)
+         audio = AudioSegment.from_wav(self.twav)
+         pydub_play(audio)
+
+      elif self.model_actual == "ElevenLabs":
+         audio = self.client.text_to_speech.convert(
+            text = self.text,
+            voice_id = self.voices[self.n_voice],
+            model_id = "eleven_multilingual_v2"
+         )
+         #e.play(audio) #no funciona
+
+         #from elevenlabs import play as eleven_play
+         #eleven_play(audio)  #no funciona
+
+         e.save(audio, self.tmp3)
+         sound = AudioSegment.from_mp3(self.tmp3)
+         pydub_play(sound)
 
    def anterior(self):
       self.n_voice -= 1
