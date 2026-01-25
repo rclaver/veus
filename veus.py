@@ -196,11 +196,11 @@ class MostraDeVeus:
          pydub_play(sound)
 
    def anterior(self):
-      self.n_voice -= 1
+      self.n_voice = self.n_voice-1 if self.n_voice>0 else 0
       self.text_to_audio()
 
    def seguent(self):
-      self.n_voice += 1
+      self.n_voice = self.n_voice+1 if self.n_voice<len(self.voices) else len(self.voices)
       self.text_to_audio()
 
    def desar(self):
